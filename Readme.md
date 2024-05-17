@@ -21,6 +21,3 @@
     └── UI.py
     └── __init__.py
 ```
-```
-streamlit run UI.py
-```
