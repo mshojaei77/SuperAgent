@@ -5,7 +5,7 @@ from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.document_loaders import PyPDFLoader
 
-from Tools.PdfFileLoader import PDFLoader
+from Tools.PdfLoader import PDFLoader
 
 
 load_dotenv()

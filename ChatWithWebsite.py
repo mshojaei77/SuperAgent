@@ -9,7 +9,7 @@ from langchain_openai.chat_models import ChatOpenAI
 from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import ChatPromptTemplate
-from Tools.WebLoader import WebScraper
+from Tools.WebLoader import WebTool
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough
 import sys
 
@@ -22,7 +22,7 @@ class WebAssistantAgent:
         self.api_key = os.getenv("OPENAI_API_KEY")
         self.model = ChatOpenAI(openai_api_key=self.api_key, model="gpt-3.5-turbo")
         self.embeddings = OpenAIEmbeddings()
-        self.scraper = WebScraper(parser='html.parser', timeout=10, cache_expiry=3600, max_cache_size=1000)
+        self.scraper = WebTool(parser='html.parser', timeout=10, cache_expiry=3600, max_cache_size=1000)
         self.parser = StrOutputParser()
         self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=20)
 

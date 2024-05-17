@@ -7,8 +7,8 @@ from .Tools.ChartMaker import *
 from .Tools.DuckduckgoSearch import *
 from .Tools.GithubLoader import *
 from .Tools.GoogleSearch import *
-from .Tools.PdfFileLoader import *
-from .Tools.PfdFinder import *
+from .Tools.PdfLoader import *
+from .Tools.SearchPdf import *
 from .Tools.SrtLoader import *
 from .Tools.WebLoader import *
 from .Tools.WebLoaderPlaywright import *
