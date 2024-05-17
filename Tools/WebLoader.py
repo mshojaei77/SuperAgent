@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import re
-import time
+import time 
 
 class WebTool:
     def __init__(self, parser='html.parser', headers=None, proxy=None, timeout=10, cache_expiry=3600, max_cache_size=1000, max_workers=None):

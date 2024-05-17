@@ -1,6 +1,6 @@
 from Tools.DuckduckgoSearch import SearchTool
 from Tools.ArxivLoader import ArxivTool
-from Tools.Pdfloader import PdfTool
+from Tools.PdfLoader import PdfTool
 from Tools.WebLoader import WebTool
 from Tools.YoutubeLoader import YoutubeTool
 from Tools.SearchPdf import SearchPdfTool
