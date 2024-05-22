@@ -1,55 +1,26 @@
-import os
-from dotenv import load_dotenv
-from langchain_openai.chat_models import ChatOpenAI
-from langchain_openai.embeddings import OpenAIEmbeddings
-from langchain_core.output_parsers import StrOutputParser
-from langchain_community.document_loaders import PyPDFLoader
+import requests
 
-from Tools.PdfLoader import PDFLoader
+# Define the search parameters
+params = {
+    'q': '"vless://"" vmess://""',  # Search for repositories containing both "vless://" and "vmess://"
+    'sort': 'stars',  # Sort results by stars (optional)
+    'order': 'desc',  # Order results descending (optional)
+    'per_page': 100,  # Number of items per page (max 100)
+}
 
+# Make the request to the GitHub API
+response = requests.get('https://api.github.com/search/code', params=params)
 
-load_dotenv()
-
-# input args
-#llm
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-llm_model = "gpt-3.5-turbo"
-llm_temperature = "0.7"
-llm_streaming=True
-#embedding
-embedding_model = 'text-embedding-ada-002'
-embedding_chunk_size = 10000
-#loader
-file_name = "example.pdf"
-pdf_loader = PDFLoader(file_name)
-pages = pdf_loader.load_and_split()
-
-
-#instances
-model = ChatOpenAI(api_key=OPENAI_API_KEY, model=llm_model, temperature=llm_temperature,streaming=llm_streaming)
-embeddings = OpenAIEmbeddings(api_key=OPENAI_API_KEY,model=embedding_model,chunk_size=embedding_chunk_size)
-parser = StrOutputParser()
-
-#prompt template
-context = "my name is mohammad"
-question = "what is my name?"
-prompt = f"""
-Answer the question based on the context below. If you can't 
-answer the question, reply "I don't know".
-
-Context: {context}
-
-Question: {question}
-"""
-
-
-#running
-#chain =  model | parser 
-#result = chain.invoke(prompt)
-#print(result)
-if __name__ == "__main__":
-    path = input("enter the [df path]: ")
-    user_input = input("ask anything? ")
-    agent = PdfAssistantAgent()
-    answer = agent.execute(path, user_input)
-    print(answer)
+# Check if the request was successful
+if response.status_code == 200:
+    # Parse the JSON response
+    data = response.json()
+    
+    # Print the total count of matching repositories
+    print(f"Total matches found: {data['total_count']}")
+    
+    # Iterate through the results and print repository names
+    for item in data['items']:
+        print(item['repository']['full_name'])
+else:
+    print("Failed to fetch data:", response.status_code)
