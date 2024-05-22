@@ -91,12 +91,9 @@ def main():
     response_message = response.choices[0].message
     messages.append(response_message)
 
+    print(response_message)
 
     tool_calls = response_message.tool_calls
-    
-    print("Running : ",tool_calls[0].function.name)
-    print("Searching : ", eval(tool_calls[0].function.arguments)['query'])
-    
     if tool_calls:
         tool_call_id = tool_calls[0].id
         tool_function_name = tool_calls[0].function.name
