@@ -25,6 +25,6 @@ class DorkSearch:
 
 if __name__ == "__main__":
     search_app = DorkSearch(max_results=30, timeout=15)
-    allowed_urls = ['https://twitter.com', 'https://x.com']
+    allowed_urls = ['https://twitter.com', 'https://x.com'] #
     query = "gpt-4o"
     print(search_app.run(query, allowed_urls))

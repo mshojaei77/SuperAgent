@@ -17,7 +17,7 @@ class SearchTool:
 
     def _create_session(self) -> requests.Session:
         session = requests.Session()
-        retries = Retry(total=5, backoff_factor=0.5, status_forcelist=[429, 500, 502, 503, 504])
+        retries = Retry(total=5, backoff_factor=0.5, status_forcelist=[429, 500, 502, 503, 504]) #
         adapter = HTTPAdapter(max_retries=retries)
         session.mount('http://', adapter)
         session.mount('https://', adapter)
