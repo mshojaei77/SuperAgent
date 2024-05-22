@@ -1,7 +1,7 @@
 import json
-from DuckduckgoSearch import SearchTool
+from Tools.DuckduckgoSearch import SearchTool
 
-class DorkSearch:
+class DorkSearch(SearchTool):
     def __init__(self, max_results, timeout):
         self.tool = SearchTool(max_results=max_results, timeout=timeout)
 

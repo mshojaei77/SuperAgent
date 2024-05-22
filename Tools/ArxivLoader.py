@@ -65,8 +65,10 @@ class ArxivTool:
 
 # Example usage of ArxivToolkit
 if __name__ == "__main__":
-    toolkit = ArxivTool()
-    search_results = toolkit.search_arxiv_and_return_articles("deep learning", num_articles=5)
+    arxiv_tool = ArxivTool()
+    query = "Python"
+    search_results = arxiv_tool.search_arxiv_and_return_articles(query, num_articles=5)
     print("Search Results:", search_results)
-    paper_content = toolkit.read_arxiv_papers(["2103.03404v1"], pages_to_read=2)
+    id_list= ["2103.03404v1"]
+    paper_content = arxiv_tool.read_arxiv_papers(id_list, pages_to_read=2)
     print("Paper Content:", paper_content)

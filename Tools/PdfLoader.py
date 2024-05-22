@@ -1,13 +1,13 @@
 import json
-from pathlib import Path
+import os
 from pypdf import PdfReader
 import fitz  # PyMuPDF
 
 class PdfTool:
-    def __init__(self, pdf_path):
-        self.pdf_path = pdf_path
-        self.pdf_reader = PdfReader(pdf_path)
-        self.doc = fitz.open(pdf_path)
+    def __init__(self, file_name):
+        self.pdf_path = os.path.join(os.path.dirname(__file__), "pdf_files" , file_name)
+        self.pdf_reader = PdfReader(self.pdf_path)
+        self.doc = fitz.open(self.pdf_path)
 
     def extract_text(self):
         text = ""
@@ -27,18 +27,19 @@ class PdfTool:
         for page in self.doc:
             tables.extend(page.get_text("dict")["blocks"])
         return [block for block in tables if "lines" in block]
-    
+
     def extract_metadata(self):
         return self.pdf_reader.metadata
-    
-    
+
+    def extract_all(self):
+        return {
+            "text": self.extract_text(),
+            "images": self.extract_images(),
+            "tables": self.extract_tables(),
+            "metadata": self.extract_metadata()
+        }
 
 if __name__ == "__main__":
-    pdf_path = Path(__file__).parent / "pdf_files" / "sample.pdf"
-    extractor = PdfTool(pdf_path)
+    file_name = "sample.pdf"
+    extractor = PdfTool(file_name)
     print(extractor.extract_text())
-    print(extractor.extract_images())
-    print(extractor.extract_metadata())
-    print(extractor.extract_tables())
-
-pdf_path = Path(__file__).parent / "pdf_files"

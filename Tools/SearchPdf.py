@@ -1,5 +1,5 @@
 import logging
-from DuckduckgoSearch import SearchTool
+from Tools.DuckduckgoSearch import SearchTool
 import json
 from pathlib import Path
 import requests
