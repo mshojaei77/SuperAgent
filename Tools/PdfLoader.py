@@ -2,12 +2,23 @@ import json
 import os
 from pypdf import PdfReader
 import fitz  # PyMuPDF
+import requests
 
 class PdfTool:
-    def __init__(self, file_name):
-        self.pdf_path = os.path.join(os.path.dirname(__file__), "pdf_files" , file_name)
+    def __init__(self, pdf_link):
+        self.pdf_path = self.get_pdf_path(pdf_link)
         self.pdf_reader = PdfReader(self.pdf_path)
         self.doc = fitz.open(self.pdf_path)
+
+    def get_pdf_path(self, pdf_link):
+        if pdf_link.startswith('http'):
+            response = requests.get(pdf_link)
+            file_path = "temp_downloaded_pdf.pdf"
+            with open(file_path, 'wb') as f:
+                f.write(response.content)
+            return file_path
+        else:
+            return pdf_link
 
     def extract_text(self):
         text = ""
@@ -40,6 +51,7 @@ class PdfTool:
         }
 
 if __name__ == "__main__":
-    file_name = "sample.pdf"
-    extractor = PdfTool(file_name)
+    pdf_link = "E:\\Codes\\LLM Apps\\SuperAgent\\Tools\\pdf_files\\python.pdf"
+    # pdf_link = "https://www.download.com/python.pdf"  # For URL-based PDF
+    extractor = PdfTool(pdf_link)
     print(extractor.extract_text())

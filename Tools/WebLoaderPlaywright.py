@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import re
 import time
+from tenacity import retry, wait_random_exponential, stop_after_attempt
 
 class WebTool:
     def __init__(self, parser='html.parser', headers=None, proxy=None, timeout=10, cache_expiry=3600, max_cache_size=1000, max_workers=None):
@@ -69,6 +70,8 @@ class WebTool:
             return [element.text.strip() for element in soup.find_all()]
         return []
 
+           
+    @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
     def scrape_texts(self, url, min_result_length=40):
         html_content = self.fetch_html(url)
         if html_content:

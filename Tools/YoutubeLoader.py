@@ -2,15 +2,14 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
 from yt_dlp import YoutubeDL
 import re
-import logging
 import json
+from tenacity import retry, wait_random_exponential, stop_after_attempt
 
 class YoutubeTool:
     def __init__(self):
         self.transcript_extracted = False
-        logging.basicConfig(level=logging.INFO)
-        self.logger = logging.getLogger(__name__)
-
+      
+    @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
     def fetch_transcript(self, video_url: str) -> str:
         pattern = r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})'
         match = re.search(pattern, video_url)

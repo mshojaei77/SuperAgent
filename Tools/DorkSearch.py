@@ -16,7 +16,7 @@ class DorkSearch(SearchTool):
         return data
 
     def run(self, query, urls):
-        dork = " site:"+" OR site:".join(allowed_urls)
+        dork = " site:"+" OR site:".join(urls)
         query = query + dork
         print(query)
         results = self.search(query)
@@ -25,6 +25,6 @@ class DorkSearch(SearchTool):
 
 if __name__ == "__main__":
     search_app = DorkSearch(max_results=30, timeout=15)
-    allowed_urls = ['https://twitter.com', 'https://x.com'] #
+    urls = ['https://twitter.com', 'https://x.com'] #
     query = "gpt-4o"
-    print(search_app.run(query, allowed_urls))
+    print(search_app.run(query,urls))

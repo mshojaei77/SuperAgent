@@ -4,7 +4,7 @@ from WebLoader import WebTool
 from concurrent.futures import ThreadPoolExecutor
 import json
 
-class SearchTool:
+class GoogleTool:
 
     def __init__(self, query, num_results, lang):
         self.query = query
@@ -37,6 +37,6 @@ if __name__ == "__main__":
     query = "python"
     num_results = 10
     lang = 'en'
-    search_agent = SearchTool(query, num_results, lang)
+    search_agent = GoogleTool(query, num_results, lang)
     results = search_agent.search_and_scrape()
     print(results)
