@@ -2,7 +2,7 @@ from serpapi import GoogleSearch
 from dotenv import load_dotenv
 import os
 
-class SepApiTool:
+class SerpApiTool:
     def __init__(self, query):
         self.query = query
         self.api_key = os.getenv("SERPAPI_KEY")
@@ -19,6 +19,6 @@ class SepApiTool:
 if __name__ == "__main__":
     load_dotenv()
     query = input("Enter your query: ")
-    search_service = SepApiTool(query)
+    search_service = SerpApiTool(query)
     results = search_service.execute_search()
     print(results)

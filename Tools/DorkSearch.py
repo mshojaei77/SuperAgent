@@ -1,7 +1,7 @@
 import json
 from Tools.DuckduckgoSearch import SearchTool
 
-class DorkSearch(SearchTool):
+class DorkSearchTool():
     def __init__(self, max_results, timeout):
         self.tool = SearchTool(max_results=max_results, timeout=timeout)
 
@@ -24,7 +24,7 @@ class DorkSearch(SearchTool):
         return json.dumps(filtered_data, indent=1)
 
 if __name__ == "__main__":
-    search_app = DorkSearch(max_results=30, timeout=15)
+    search_app = DorkSearchTool(max_results=30, timeout=15)
     urls = ['https://twitter.com', 'https://x.com'] #
     query = "gpt-4o"
     print(search_app.run(query,urls))

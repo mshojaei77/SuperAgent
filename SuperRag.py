@@ -1,6 +1,8 @@
 # Importing libraries
 from dotenv import load_dotenv
 import os
+from tenacity import retry, wait_random_exponential, stop_after_attempt
+
 from langchain_openai.chat_models import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -49,6 +51,29 @@ class RagApp:
         chain = setup | prompt | self.client | self.parser
         
         return chain.invoke(user_input)
+    
+    @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
+    def get_arxiv_article(self, query, num_articles=1):
+        arxiv_tool = ArxivReader()
+        search_results = arxiv_tool.search_arxiv_and_return_articles(query, num_articles)
+        return search_results
+            
+    @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
+    def read_pdf(self, file_path):
+        extractor = PdfReader()
+        print(extractor.extract_text(file_path))
+        
+    @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
+    def read_url(self, url):
+        scraper = WebReader(parser='html.parser')
+        clean_texts = scraper.scrape_texts(url)
+        return " ".join(clean_texts)
+        
+    @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
+    def read_youtube_url(self, vide_url):
+        tool = YoutubeReader()
+        transcript = tool.fetch_transcript(vide_url)
+        return transcript
 
 def main():
     openai_api_key = os.environ["OPENAI_API_KEY"]
