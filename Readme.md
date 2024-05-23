@@ -7,6 +7,7 @@
 SuperAgent is a cutting-edge AI-driven project designed to revolutionize the way we gather and process information from various sources. This system is built to efficiently collect, analyze, and present data from the web, academic papers, and other digital platforms. With its advanced natural language processing capabilities and robust search algorithms, SuperAgent is poised to become an indispensable tool for researchers, analysts, and anyone seeking to uncover valuable insights from the vast expanse of online data.
 
 
+
 ## **Tools**
 
 This directory contains a collection of tools and scripts that are used to gather and process information from various sources.
