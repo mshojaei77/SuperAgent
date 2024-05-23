@@ -8,8 +8,6 @@ from Tools.DorkSearch import DorkSearch
 from Tools.DuckduckgoSearch import SearchTool
 from Tools.PdfLoader import PdfTool
 
-load_dotenv()
-GPT_MODEL = "gpt-3.5-turbo"
 
 class GPTApp:
     def __init__(self, gpt_model, api_key):
@@ -79,21 +77,24 @@ class GPTApp:
 
 def main():
     load_dotenv()
+    GPT_MODEL = "gpt-3.5-turbo"
     api_key = os.environ["OPENAI_API_KEY"]
     app = GPTApp(gpt_model=GPT_MODEL, api_key=api_key)
-
     user_input = input("Ask Anything: ")
+    
 
     messages = [{"role": "user", "content": user_input}]
     tools = app.generate_tools()
-
     response = app.chat_completion_request(messages=messages, tools=tools, tool_choice="auto")
     response_message = response.choices[0].message
     messages.append(response_message)
 
-    print(response_message)
 
     tool_calls = response_message.tool_calls
+    
+    print("Running : ",tool_calls[0].function.name)
+    print("Searching : ", eval(tool_calls[0].function.arguments)['query'])
+    
     if tool_calls:
         tool_call_id = tool_calls[0].id
         tool_function_name = tool_calls[0].function.name
