@@ -5,7 +5,7 @@ import re
 import time
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 
-class WebTool:
+class WebReader:
     def __init__(self, parser='html.parser', headers=None, proxy=None, timeout=10, cache_expiry=3600, max_cache_size=1000, max_workers=None):
         self.parser = parser
         self.proxy = proxy
@@ -95,7 +95,7 @@ class WebTool:
         return []
 
 if __name__ == "__main__":
-    scraper = WebTool(
+    scraper = WebReader(
         parser='html.parser',
         headers=None,
         proxy=None,

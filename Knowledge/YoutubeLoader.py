@@ -5,7 +5,7 @@ import re
 import json
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 
-class YoutubeTool:
+class YoutubeReader:
     def __init__(self):
         self.transcript_extracted = False
       
@@ -16,6 +16,7 @@ class YoutubeTool:
         if match is None:
             self.logger.error("Invalid YouTube URL. Please enter a valid YouTube video URL.")
             return None
+        
         video_id = match.group(6)
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
         formatter = TextFormatter()
@@ -35,7 +36,7 @@ class YoutubeTool:
 
 # Example usage:
 if __name__ == "__main__":
-    tool = YoutubeTool()
+    tool = YoutubeReader()
     vide_url = input("Enter youtube video link: ")
     transcript = tool.fetch_transcript(vide_url)
     print(transcript)

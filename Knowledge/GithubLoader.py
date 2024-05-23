@@ -4,7 +4,7 @@ import base64
 from github import Github
 from urllib.parse import urlparse
 
-class GitHubTool:
+class GitHubReader:
     def __init__(self, github_token=None):
         self.github_token = github_token
         if self.github_token:
@@ -70,7 +70,7 @@ class GitHubTool:
 if __name__ == "__main__":
     load_dotenv()
     github_token = os.getenv("GITHUB_TOKEN")
-    loader = GitHubTool(github_token)
+    loader = GitHubReader(github_token)
     repo_url = "https://github.com/mshojaei77/Awesome-AI"
     result = loader.load(repo_url)
     print(result)

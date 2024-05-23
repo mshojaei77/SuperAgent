@@ -2,12 +2,8 @@ import json
 from pathlib import Path
 import arxiv
 from pypdf import PdfReader
-import logging
 
-logger = logging.getLogger(__name__)
-#logging.basicConfig(level=logging.INFO)
-
-class ArxivTool:
+class ArxivReader:
     def __init__(self, search_arxiv= True, read_arxiv_papers= True, download_dir = None):
         self.download_dir = download_dir or Path(__file__).parent / "pdfs_files"
         if search_arxiv:
@@ -20,7 +16,7 @@ class ArxivTool:
 
     def search_arxiv_and_return_articles(self, query: str, num_articles: int = 10):
         client = arxiv.Client()
-        logger.info(f"Searching arxiv for: {query}")
+        print(f"Searching arxiv for: {query}")
         articles = [
             {
                 "title": result.title,
@@ -38,7 +34,7 @@ class ArxivTool:
         download_dir = self.download_dir
         download_dir.mkdir(parents=True, exist_ok=True)
         client = arxiv.Client()
-        logger.info(f"Searching arxiv for: {id_list}")
+        print(f"Searching arxiv for: {id_list}")
         articles = []
         for result in client.results(search=arxiv.Search(id_list=id_list)):
             article = {
@@ -50,9 +46,9 @@ class ArxivTool:
                 "comment": result.comment,
             }
             if result.pdf_url:
-                logger.info(f"Downloading: {result.pdf_url}")
+                print(f"Downloading: {result.pdf_url}")
                 pdf_path = result.download_pdf(dirpath=str(download_dir))
-                logger.info(f"To: {pdf_path}")
+                print(f"To: {pdf_path}")
                 pdf_reader = PdfReader(pdf_path)
                 article["content"] = [
                     {"page": page_number, "text": page.extract_text()}
@@ -65,7 +61,7 @@ class ArxivTool:
 
 # Example usage of ArxivToolkit
 if __name__ == "__main__":
-    arxiv_tool = ArxivTool()
+    arxiv_tool = ArxivReader()
     query = "Python"
     search_results = arxiv_tool.search_arxiv_and_return_articles(query, num_articles=5)
     print("Search Results:", search_results)

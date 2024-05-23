@@ -1,21 +1,21 @@
-import json
 import os
 from openai import OpenAI
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from dotenv import load_dotenv
-from Tools.ArxivLoader import ArxivTool
-from Tools.DorkSearch import DorkSearch
+
+from Knowledge.ArxivLoader import ArxivReader
+from Knowledge.PdfLoader import PdfReader
+from Knowledge.WebLoader import WebReader
+from Knowledge.YoutubeLoader import YoutubeReader
+
+from Tools.PdfSearch import SearchPdfTool
+from Tools.DorkSearch import DorkSearchTool
 from Tools.DuckduckgoSearch import SearchTool
-from Tools.PdfLoader import PdfTool
-from Tools.SearchPdf import SearchPdfTool
-from Tools.WebLoader import WebTool
-from Tools.YoutubeLoader import YoutubeTool
 from Tools.SerpApiSearch import SepApiTool
 
 load_dotenv()
-GPT_MODEL = "gpt-3.5-turbo"
 
-class App:
+class ToolApp:
     def __init__(self, gpt_model, api_key):
         self.gpt_model = gpt_model
         self.client = OpenAI(api_key=api_key)
@@ -201,13 +201,13 @@ class App:
 
     @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
     def get_arxiv_article(self, query, num_articles=1):
-        arxiv_tool = ArxivTool()
+        arxiv_tool = ArxivReader()
         search_results = arxiv_tool.search_arxiv_and_return_articles(query, num_articles)
         return search_results
 
     @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
     def search_in(self, query, urls):
-        dork_search = DorkSearch(max_results=5, timeout=15)
+        dork_search = DorkSearchTool(max_results=5, timeout=15)
         return dork_search.run(query,urls)
     
     @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
@@ -226,8 +226,8 @@ class App:
         
     @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
     def read_pdf(self, file_path):
-        extractor = PdfTool(file_path)
-        print(extractor.extract_text())
+        extractor = PdfReader()
+        print(extractor.extract_text(file_path))
 
     @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
     def search_internet(self, query):
@@ -248,21 +248,20 @@ class App:
     
     @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
     def read_url(self, url):
-        scraper = WebTool(parser='html.parser')
+        scraper = WebReader(parser='html.parser')
         clean_texts = scraper.scrape_texts(url)
         return " ".join(clean_texts)
         
     @retry(wait=wait_random_exponential(multiplier=1, max=20), stop=stop_after_attempt(3))
     def read_youtube_url(self, vide_url):
-        tool = YoutubeTool()
+        tool = YoutubeReader()
         transcript = tool.fetch_transcript(vide_url)
         return transcript
         
 
 def main():
-    load_dotenv()
-    api_key = os.environ["OPENAI_API_KEY"]
-    app = App(gpt_model=GPT_MODEL, api_key=api_key)
+    openai_api_key = os.environ["OPENAI_API_KEY"]
+    app = ToolApp(gpt_model="gpt-3.5-turbo", api_key=openai_api_key)
 
     user_input = "Search for 'elon musk last tweets' within https://twitter.com"
 
