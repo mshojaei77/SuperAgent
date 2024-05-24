@@ -46,7 +46,10 @@ class SearchPdfTool:
         except requests.exceptions.Timeout:
             print(f"Download timed out: '{url}'")
         except requests.exceptions.HTTPError as err:
-            print(f"HTTP error occurred: {err}")
+            if response.status_code == 403:
+                print(f"HTTP error occurred: {err} for url: {url}")
+            else:
+                print(f"HTTP error occurred: {err}")
         except requests.exceptions.RequestException as err:
             print(f"Error occurred: {err}")
         except PermissionError:

@@ -11,37 +11,36 @@ import pandas as pd
 import requests
 
 class FileReader:
-    def __init__(self, directory_path):
-        self.directory_path = directory_path
+    def __init__(self):
         self.reader = easyocr.Reader(['en', 'fa'])
 
-    def download_and_read_files(self, urls):
+    def download_and_read_files(self, directory_path, urls):
         if not urls:
             print("No URLs provided.")
             return {}
         for url in urls:
             if url:
-                self._download_file(url)
-        return self.read_files()
+                self._download_file(directory_path, url)
+        return self.read_files(directory_path)
 
-    def _download_file(self, url):
+    def _download_file(self, directory_path, url):
         response = requests.get(url)
         if response.status_code == 200:
             filename = os.path.basename(url)
-            file_path = os.path.join(self.directory_path, filename)
+            file_path = os.path.join(directory_path, filename)
             with open(file_path, 'wb') as file:
                 file.write(response.content)
         else:
             print(f"Failed to download file: {url}")
 
-    def read_files(self):
+    def read_files(self, directory_path):
         file_contents = {}
-        if not os.path.exists(self.directory_path):
-            print(f"Directory does not exist: {self.directory_path}")
+        if not os.path.exists(directory_path):
+            print(f"Directory does not exist: {directory_path}")
             return file_contents
 
-        for filename in os.listdir(self.directory_path):
-            file_path = os.path.join(self.directory_path, filename)
+        for filename in os.listdir(directory_path):
+            file_path = os.path.join(directory_path, filename)
             if not os.path.isfile(file_path):
                 continue
             if filename == 'extracted_images':  # Skip the 'extracted_images' directory
@@ -49,7 +48,7 @@ class FileReader:
             if filename.endswith('.txt'):
                 file_contents[filename] = self._read_txt(file_path)
             elif filename.endswith('.pdf'):
-                file_contents[filename] = self._read_pdf(file_path)
+                file_contents[filename] = self._read_pdf(directory_path, file_path)
             elif filename.endswith('.docx'):
                 file_contents[filename] = self._read_docx(file_path)
             elif filename.endswith('.pptx'):
@@ -69,14 +68,14 @@ class FileReader:
             content = file.read()
         return content if content else ""
 
-    def _read_pdf(self, file_path):
+    def _read_pdf(self, directory_path, file_path):
         if not os.path.isfile(file_path):
             return {'text': '', 'images': [], 'image_text': ''}
 
         text = ""
         image_text = ""
         images = []
-        image_dir = os.path.join(self.directory_path, 'extracted_images')
+        image_dir = os.path.join(directory_path, 'extracted_images')
         os.makedirs(image_dir, exist_ok=True)
 
         with pdfplumber.open(file_path) as pdf:
@@ -156,8 +155,8 @@ if __name__ == "__main__":
     urls = [
         "https://web.mst.edu/~hilgers/index_files/IST%205001.pdf",
     ]
-    reader = FileReader(directory_path)
-    contents = reader.download_and_read_files(urls)
+    reader = FileReader()
+    contents = reader.download_and_read_files(directory_path, urls)
     for filename, content in contents.items():
         if isinstance(content, dict) and 'images' in content:
             print(f"Contents of {filename}:\nText:\n{content['text']}\nImages: {content['images']}\nImage Text:\n{content['image_text']}\n")
