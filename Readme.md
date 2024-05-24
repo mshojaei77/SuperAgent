@@ -26,8 +26,3 @@ Contributions to SuperAgent are welcome. If you'd like to contribute, please fol
 5. Create a pull request to merge your changes into the main repository.
 
 SuperAgent is licensed under the MIT License. See the `LICENSE` file for details.
-
-**Acknowledgments**
----------------
-
-SuperAgent was developed by** Mohammad Shojaei**. Special thanks to [Contributors] for their contributions to the project.
