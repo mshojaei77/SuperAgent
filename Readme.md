@@ -25,4 +25,4 @@ Contributions to SuperAgent are welcome. If you'd like to contribute, please fol
 4. Push your branch to your forked repository.
 5. Create a pull request to merge your changes into the main repository.
 
-SuperAgent is licensed under the MIT License. See the [`LICENSE`](https://github.com/mshojaei77/SuperAgent/blob/main/LICENSE) file for details.
+SuperAgent is licensed under the  Apache License. See the [`LICENSE`](https://github.com/mshojaei77/SuperAgent/blob/main/LICENSE) file for details.
