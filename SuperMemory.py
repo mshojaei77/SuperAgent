@@ -14,12 +14,9 @@ class MemoryApp:
             CREATE TABLE IF NOT EXISTS {self.table_name} (
                 id INTEGER PRIMARY KEY,
                 conversation_id TEXT,
-                turn_id INTEGER,
                 agent TEXT,
                 message TEXT,
-                sentiment TEXT,
-                knowledge_source TEXT,
-                turn_rating TEXT
+                knowledge_source TEXT
             )
         """)
         self.conn.commit()
@@ -28,21 +25,15 @@ class MemoryApp:
         self.cursor.execute(f"""
             INSERT INTO {self.table_name} (
                 conversation_id,
-                turn_id,
                 agent,
                 message,
-                sentiment,
-                knowledge_source,
-                turn_rating
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                knowledge_source
+            ) VALUES (?, ?, ?, ?)
         """, (
             message["conversation_id"],
-            message["turn_id"],
             message["agent"],
             message["message"],
-            message["sentiment"],
-            json.dumps(message["knowledge_source"]),
-            message["turn_rating"]
+            json.dumps(message["knowledge_source"])
         ))
         self.conn.commit()
 
@@ -53,14 +44,19 @@ class MemoryApp:
         rows = self.cursor.fetchall()
         messages = []
         for row in rows:
+            if row[4].strip():  # Make sure knowledge_source is not empty
+                try:
+                    knowledge_source = json.loads(row[4])
+                except json.JSONDecodeError:
+                    knowledge_source = None
+            else:
+                knowledge_source = None
+
             message = {
                 "conversation_id": row[1],
-                "turn_id": row[2],
-                "agent": row[3],
-                "message": row[4],
-                "sentiment": row[5],
-                "knowledge_source": json.loads(row[6]),
-                "turn_rating": row[7]
+                "agent": row[2],
+                "message": row[3],
+                "knowledge_source": knowledge_source
             }
             messages.append(message)
         return messages
@@ -69,36 +65,22 @@ class MemoryApp:
         self.conn.close()
 
 # Example usage
-app = MemoryApp(table_name="chat_sessions", db_path="Memory\\memory.db")
+if __name__ == "__main__":
+    memory_app = MemoryApp(table_name="chat_sessions", db_path="Memory\\memory.db")
 
-chat_history = [
-    {
-        "conversation_id": "1234567890",
-        "turn_id": 1,
-        "agent": "human",
-        "message": "Hello, how are you today?",
-        "sentiment": "neutral",
-        "knowledge_source": ["Personal Knowledge"],
-        "turn_rating": "Good"
-    },
-    {
-        "conversation_id": "1234567890",
-        "turn_id": 2,
-        "agent": "ai",
-        "message": "I'm doing well, thank you for asking. How can I assist you today?",
-        "sentiment": "positive",
-        "knowledge_source": ["AS1", "Personal Knowledge"],
-        "turn_rating": "Excellent"
-    },
-    # Add more items to the chat history
-]
+    conversation_id = "1234567890"  # Replace with a unique conversation ID
 
-for item in chat_history:
-    app.save_message(item)
 
-conversation_id = "1234567890"
-messages = app.get_messages(conversation_id)
-for message in messages:
-    print(message)
+    memory_app.save_message({
+            "conversation_id": conversation_id,
+            "agent": "test role",
+            "message": "hello",
+            "knowledge_source": "nothing",
+    })
 
-app.close()
+    messages = memory_app.get_messages(conversation_id)
+    
+    for message in messages:
+        print(message)
+
+    memory_app.close()

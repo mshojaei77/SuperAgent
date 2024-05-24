@@ -1,49 +1,47 @@
 import os
-from pypdf import PdfReader
+from pypdf import PdfReader as PyPdfReader
 import requests
 
-class PdfReader:
+class SimplePdfReader:
+    def extract_text_from_file(self, path):
+        reader = PyPdfReader(path)
+        text = ""
+        for page_num, page in enumerate(reader.pages, start=1):
+            text += f"Page {page_num}\n" + page.extract_text() + "\n"
+        return text.strip()
+
+    def extract_text_from_url(self, url):
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+
+            with open('temp.pdf', 'wb') as f:
+                f.write(response.content)
+
+            reader = PyPdfReader('temp.pdf')
+            texts = ""
+            for page_num, page in enumerate(reader.pages, start=1):
+                texts += f"[Page {page_num}]\n" + page.extract_text() + "\n\n"
+            os.remove('temp.pdf')
+            return texts.strip().encode("utf-8", "backslashreplace").decode("utf-8")
+        except requests.exceptions.RequestException as err:
+            print(f"An error occurred: {err}")
+            return ""
+
     def extract_text(self, path):
         if os.path.isfile(path):
-            reader = PdfReader(path)
-            text = ""
-            page_num = 1
-            for page in reader.pages:
-                text += f"Page {page_num}\n" + page.extract_text() + "\n"  # Assuming extract_text exists on page objects
-                page_num += 1
+            return self.extract_text_from_file(path)
         elif path.startswith('http'):
-            # URL
-            try:
-                response = requests.get(path, timeout=10)
-                response.raise_for_status()
-
-                with open('temp.pdf', 'wb') as f:
-                    f.write(response.content)
-
-                pdf_file = open('temp.pdf', 'rb')
-                reader = PdfReader(pdf_file)
-                texts = ""
-                page_num = 1
-                for page in reader.pages:
-                    texts += f"[Page {page_num}]\n" + page.extract_text() + "\n\n"
-                    page_num += 1
-                text = texts.encode("utf-8", "backslashreplace").decode("utf-8")
-                pdf_file.close()
-                os.remove('temp.pdf')
-            except requests.exceptions.RequestException as err:
-                print(f"An error occurred: {err}")
-                return ""
+            return self.extract_text_from_url(path)
         else:
             print("Invalid input. Please provide a valid file path or URL.")
             return ""
 
-        return text.strip()
-
 if __name__ == "__main__":
-    file_path = "E:\\Codes\\LLM Apps\\SuperAgent\\Tools\\pdf_files\\python.pdf"
+    file_path = "E:\\Codes\\LLM Apps\\SuperAgent\\Tools\\files\\python.pdf"
     file_link = "https://web.mst.edu/~hilgers/index_files/IST%205001.pdf"
 
-    extractor = PdfReader()
+    extractor = SimplePdfReader()
     text2 = extractor.extract_text(file_link)
     print(text2)
 

@@ -1,0 +1,137 @@
+[
+    {
+        "type": "function",
+        "function": {
+            "name": "read_arxiv_article",
+            "description": "Search for articles on Arxiv and return the results.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The search query."
+                    },
+                    "num_articles": {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "The number of articles to return."
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "custom_site_search",
+            "description": "Search for specific keywords within a set of Custom URLs",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The search query."
+                    },
+                    "urls": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "The list of URLs to search within."
+                    }
+                },
+                "required": ["query", "urls"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_and_read_pdf",
+            "description": "Search for PDF files and return the titles and contents.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The search query."
+                    },
+                    "max_results": {
+                        "type": "integer",
+                        "description": "The maximum number of results to return."
+                    }
+                },
+                "required": ["query", "max_results"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_pdf",
+            "description": "Read the contents of a PDF file.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "file_path": {
+                        "type": "string",
+                        "description": "The path or link of the PDF file to read.This function works for both local PDF files (e.g. E:\\pdf_files\\python.pdf) and URLs (https://www.pdfdownload.com/python.pdf)"
+                    }
+                },
+                "required": ["file_path"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_internet",
+            "description": "Search the internet for a query and return the results.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The search query."
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_url",
+            "description": "Read the contents of a URL as text.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "The URL to read."
+                    }
+                },
+                "required": ["url"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_youtube_url",
+            "description": "Read the transcript of a YouTube video.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "video_url": {
+                        "type": "string",
+                        "description": "The URL of the YouTube video."
+                    }
+                },
+                "required": ["video_url"]
+            }
+        }
+    }
+]

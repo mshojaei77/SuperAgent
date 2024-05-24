@@ -1,9 +1,13 @@
-from Tools.DuckduckgoSearch import SearchTool
 from pathlib import Path
 import requests
 import ssl
 from requests.adapters import HTTPAdapter
 from urllib3.poolmanager import PoolManager
+import sys
+sys.path.append('E:\\Codes\\LLM Apps\\SuperAgent\\Knowledge\\')
+sys.path.append('E:\\Codes\\LLM Apps\\SuperAgent\\Tools\\')
+from PdfLoader import SimplePdfReader
+from DuckduckgoSearch import SearchTool
 
 
 class SslAdapter(HTTPAdapter):
@@ -27,12 +31,9 @@ class SearchPdfTool:
         self.session = requests.Session()
         self.session.mount("https://", SslAdapter())
 
-
     def search(self, query):
-
-        full_query = query + self.dork
+        full_query = query + " " + self.dork
         results = self.tool.duckduckgo_search(full_query)
-
         return results
 
     def download_pdf(self, url):
@@ -51,18 +52,27 @@ class SearchPdfTool:
         except PermissionError:
             print(f"Permission denied: '{pdf_file_path}'")
 
-    def get_pdf_path(self):
-        return str(self.pdf_path)
+    def read_pdfs(self, query):
+        extractor = SimplePdfReader()
+        results = self.search(query=query)
 
-
-if __name__ == "__main__" :
-        search_pdf = SearchPdfTool(max_results=3)
-        results = search_pdf.search(query=input("query: "))
         for item in results:
-            search_pdf.download_pdf(item['href'])
+            self.download_pdf(item['href'])
+
+        text = ""
+        for pdf_file in self.pdf_path.glob("*.pdf"):
+            text += extractor.extract_text(str(pdf_file))
+
         info = {
-                "titles": [item['title'].replace('PDF', '') for item in results],
-                "path": search_pdf.get_pdf_path(),
-            }
-            
-        print(info)
+            "titles": [item['title'].replace('PDF', '') for item in results],
+            "content": text,
+        }
+
+        return info
+
+
+if __name__ == "__main__":
+    search_pdf = SearchPdfTool(max_results=3)
+    query = "python"
+    result_info = search_pdf.read_pdfs(query=query)
+    print(result_info)
