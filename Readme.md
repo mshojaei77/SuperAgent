@@ -34,4 +34,4 @@ SuperAgent is licensed under the MIT License. See the `LICENSE` file for details
 **Acknowledgments**
 ---------------
 
-SuperAgent was developed by** Mohammad Shojaei**. Special thanks to [Contributors] for their contributions to the project.
+SuperAgent was developed by**Mohammad Shojaei**. Special thanks to [Contributors] for their contributions to the project.

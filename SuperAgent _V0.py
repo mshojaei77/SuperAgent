@@ -13,7 +13,7 @@ sys.path.append('E:\\Codes\\LLM Apps\\SuperAgent\\')
 
 from Knowledge.ArxivLoader import ArxivReader
 from Knowledge.PdfLoader import SimplePdfReader
-from Knowledge.FileLoader import FileReader
+from Knowledge.FileLoader import FileManager
 from Knowledge.WebLoader import WebReader
 from Knowledge.YoutubeLoader import YoutubeReader
 
@@ -56,18 +56,6 @@ class ToolApp:
         link = search_results[0].get("pdf_url")
         text = arxiv_tool.read_file(link)
         data = f"Article Information: {search_results} \n\n Article: {text}"
-        context = self.rag.retrieve(query, data)
-        return context
-
-    def read_files(self, query, directory_path, urls): 
-        reader = FileReader(directory_path)
-        contents = reader.download_and_read_files(urls)
-        for filename, content in contents.items():
-            if isinstance(content, dict) and 'images' in content:
-                data = (f"Contents of {filename}:\nText:\n{content['text']}\nImages: {content['images']}\nImage Text:\n{content['image_text']}\n")
-            else:
-                data = (f"Contents of {filename}:\n{content}\n")
-
         context = self.rag.retrieve(query, data)
         return context
 

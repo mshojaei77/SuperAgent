@@ -3,12 +3,14 @@ from openai import OpenAI
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from dotenv import load_dotenv
 import logging
+import os
+from settings import FILES_DIR
 
 from SuperRag import RagApp
 
 from Knowledge.ArxivLoader import ArxivReader
 from Knowledge.PdfLoader import SimplePdfReader
-from Knowledge.FileLoader import FileReader
+from Knowledge.FileLoader import FileManager
 from Knowledge.WebLoader import WebReader
 from Knowledge.YoutubeLoader import YoutubeReader
 
@@ -104,16 +106,33 @@ class ToolApp:
 
 
     def read_files(self, query, directory_path, urls):
-        reader = FileReader(directory_path)
-        contents = reader.download_and_read_files(urls)
-        for filename, content in contents.items():
-            if isinstance(content, dict) and 'images' in content:
-                data = (f"Contents of {filename}:\nText:\n{content['text']}\nImages: {content['images']}\nImage Text:\n{content['image_text']}\n")
-            else:
-                data = (f"Contents of {filename}:\n{content}\n")
+        file_manager = FileManager(ocr_languages=['en', 'fa'], enable_ocr=False)
+        
+        file_uploaded = False
+        
+        directory_path = FILES_DIR
+        
+        filename = input("Please upload a file (example: sample.pdf): ").strip()
+        
+        if filename:
+            file_uploaded = True
+            
+            
+        if filename.lower().endswith(('.txt', '.pdf', '.docx', '.pptx', '.xlsx', '.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+            valid_file = True
+        else:
+            valid_file = False
+        
+        if file_uploaded & valid_file:
+            file_path = os.path.join(directory_path, filename)
+            
+            content = file_manager.read(file_path)
+            #file_manager.cleanup(file_path)
+            print(content)
+        else:
+            print("Invalid file type.")
 
-        context = self.rag.retrieve(query, data)
-        return context
+
 
     def read_pdf(self, query, file_path):
         extractor = SimplePdfReader()

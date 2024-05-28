@@ -1,13 +1,16 @@
-from pathlib import Path
 import arxiv
+
 import sys
-sys.path.append('E:\\Codes\\LLM Apps\\SuperAgent\\Knowledge\\')
-from PdfLoader import SimplePdfReader
+from settings import BASE_DIR, FILES_DIR
+sys.path.append(BASE_DIR)
+
+from Knowledge.PdfLoader import SimplePdfReader
+
 
 class ArxivReader:
-    def __init__(self, search_arxiv=True, read_arxiv_papers=True, download_dir=None):
+    def __init__(self, search_arxiv=True, read_arxiv_papers=True):
         try:
-            self.download_dir = download_dir or Path(__file__).parent / "files"
+            self.download_dir = FILES_DIR 
         except Exception as e:
             print(f"Error initializing download_dir: {e}")
             raise

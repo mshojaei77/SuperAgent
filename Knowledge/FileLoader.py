@@ -8,122 +8,74 @@ from pptx import Presentation
 from PIL import Image
 import easyocr
 import pandas as pd
-import requests
+from abc import ABC, abstractmethod
+from settFILES_DIRings import 
 
-class FileReader:
-    def __init__(self):
-        self.reader = easyocr.Reader(['en', 'fa'])
 
-    def download_and_read_files(self, directory_path, urls):
-        if not urls:
-            print("No URLs provided.")
-            return {}
-        for url in urls:
-            if url:
-                self._download_file(directory_path, url)
-        return self.read_files(directory_path)
+# Abstract base class for all file readers
+class IFileReader(ABC):
+    @abstractmethod
+    def read(self, file_path):
+        pass
 
-    def _download_file(self, directory_path, url):
-        response = requests.get(url)
-        if response.status_code == 200:
-            filename = os.path.basename(url)
-            file_path = os.path.join(directory_path, filename)
-            with open(file_path, 'wb') as file:
-                file.write(response.content)
-        else:
-            print(f"Failed to download file: {url}")
 
-    def read_files(self, directory_path):
-        file_contents = {}
-        if not os.path.exists(directory_path):
-            print(f"Directory does not exist: {directory_path}")
-            return file_contents
-
-        for filename in os.listdir(directory_path):
-            file_path = os.path.join(directory_path, filename)
-            if not os.path.isfile(file_path):
-                continue
-            if filename == 'extracted_images':  # Skip the 'extracted_images' directory
-                continue
-            if filename.endswith('.txt'):
-                file_contents[filename] = self._read_txt(file_path)
-            elif filename.endswith('.pdf'):
-                file_contents[filename] = self._read_pdf(directory_path, file_path)
-            elif filename.endswith('.docx'):
-                file_contents[filename] = self._read_docx(file_path)
-            elif filename.endswith('.pptx'):
-                file_contents[filename] = self._read_pptx(file_path)
-            elif filename.endswith('.xlsx'):
-                file_contents[filename] = self._read_xlsx(file_path)
-            elif filename.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
-                file_contents[filename] = self._read_image(file_path)
-            else:
-                print(f"Unsupported file type: {filename}")
-        return file_contents
-
-    def _read_txt(self, file_path):
-        if not os.path.isfile(file_path):
-            return ""
+class TextFileReader(IFileReader):
+    def read(self, file_path):
         with open(file_path, 'r') as file:
             content = file.read()
-        return content if content else ""
+        return content
 
-    def _read_pdf(self, directory_path, file_path):
-        if not os.path.isfile(file_path):
-            return {'text': '', 'images': [], 'image_text': ''}
 
-        text = ""
-        image_text = ""
-        images = []
-        image_dir = os.path.join(directory_path, 'extracted_images')
+class PdfFileReader(IFileReader):
+    def __init__(self, ocr_reader=None, extract_images=True, extract_text=True):
+        self.ocr_reader = ocr_reader
+        self.extract_images = extract_images
+        self.extract_text = extract_text
+
+    def read(self, file_path):
+        text, images, image_text = "", [], ""
+        image_dir = os.path.join(os.path.dirname(file_path), 'extracted_images')
         os.makedirs(image_dir, exist_ok=True)
 
-        with pdfplumber.open(file_path) as pdf:
-            for page_number, page in enumerate(pdf.pages, start=1):
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text + "\n"
-                for table in page.extract_tables():
-                    text += "Table:\n"
-                    for row in table:
-                        text += "\t".join(str(cell) if cell is not None else "" for cell in row) + "\n"
+        if self.extract_text:
+            with pdfplumber.open(file_path) as pdf:
+                for page in pdf.pages:
+                    text += (page.extract_text() or "") + "\n"
+                    for table in page.extract_tables() or []:
+                        text += "Table:\n" + "\n".join("\t".join(str(cell) for cell in row) for row in table) + "\n"
 
-        pdf_document = fitz.open(file_path)
-        for page_number in range(len(pdf_document)):
-            page = pdf_document.load_page(page_number)
-            for img_index, img in enumerate(page.get_images(full=True)):
-                xref = img[0]
-                base_image = pdf_document.extract_image(xref)
-                image_bytes = base_image["image"]
-                image_hash = hashlib.md5(image_bytes).hexdigest()
-                image_ext = base_image["ext"]
-                image_filename = os.path.join(image_dir, f"{image_hash}.{image_ext}")
+        if self.extract_images:
+            pdf_document = fitz.open(file_path)
+            for page in pdf_document:
+                for img in page.get_images(full=True):
+                    base_image = pdf_document.extract_image(img[0])
+                    image_bytes = base_image["image"]
+                    image_hash = hashlib.md5(image_bytes).hexdigest()
+                    image_filename = os.path.join(image_dir, f"{image_hash}.{base_image['ext']}")
+                    if not os.path.exists(image_filename):
+                        with open(image_filename, "wb") as image_file:
+                            image_file.write(image_bytes)
+                        images.append(image_filename)
 
-                if not os.path.exists(image_filename):
-                    with open(image_filename, "wb") as image_file:
-                        image_file.write(image_bytes)
-                    images.append(image_filename)
-
-        for image_path in images:
-            image_text += f"\nText from {os.path.basename(image_path)}:\n"
-            image_text += self._read_image(image_path)
+            if self.ocr_reader:
+                for image_path in images:
+                    image_text += f"\nText from {os.path.basename(image_path)}:\n"
+                    image_text += ImageFileReader(self.ocr_reader).read(image_path)
 
         return {'text': text, 'images': images, 'image_text': image_text}
 
-    def _read_docx(self, file_path):
-        if not os.path.isfile(file_path):
-            return ""
+
+class DocxFileReader(IFileReader):
+    def read(self, file_path):
         text = docx2txt.process(file_path)
         doc = docx.Document(file_path)
         for table in doc.tables:
-            text += "\nTable:\n"
-            for row in table.rows:
-                text += "\t".join(cell.text if cell.text else "" for cell in row.cells) + "\n"
+            text += "\nTable:\n" + "\n".join("\t".join(cell.text for cell in row.cells) for row in table.rows) + "\n"
         return text
 
-    def _read_pptx(self, file_path):
-        if not os.path.isfile(file_path):
-            return ""
+
+class PptxFileReader(IFileReader):
+    def read(self, file_path):
         prs = Presentation(file_path)
         text = ""
         for slide in prs.slides:
@@ -132,33 +84,89 @@ class FileReader:
                     text += shape.text + "\n"
         return text
 
-    def _read_image(self, file_path):
-        if not os.path.isfile(file_path):
-            return ""
-        result = self.reader.readtext(file_path, detail=0)
-        return "\n".join(result)
 
-    def _read_xlsx(self, file_path):
-        if not os.path.isfile(file_path):
-            return ""
+class ImageFileReader(IFileReader):
+    def __init__(self, ocr_reader=None):
+        self.ocr_reader = ocr_reader
+
+    def read(self, file_path):
+        if self.ocr_reader:
+            result = self.ocr_reader.readtext(file_path, detail=0)
+            return "\n".join(result)
+        return ""
+
+
+class XlsxFileReader(IFileReader):
+    def read(self, file_path):
         xl = pd.ExcelFile(file_path)
         text = ""
         for sheet_name in xl.sheet_names:
             df = xl.parse(sheet_name)
-            text += f"Sheet: {sheet_name}\n"
-            text += df.to_string(index=False)
+            text += f"Sheet: {sheet_name}\n{df.to_string(index=False)}\n"
         return text
+
+
+class FileManager:
+    def __init__(self, ocr_languages=['en', 'fa'], enable_ocr=True):
+        self.ocr_reader = easyocr.Reader(ocr_languages) if enable_ocr else None
+        self.readers = {
+            '.txt': TextFileReader(),
+            '.pdf': PdfFileReader(self.ocr_reader),
+            '.docx': DocxFileReader(),
+            '.pptx': PptxFileReader(),
+            '.xlsx': XlsxFileReader(),
+            '.png': ImageFileReader(self.ocr_reader),
+            '.jpg': ImageFileReader(self.ocr_reader),
+            '.jpeg': ImageFileReader(self.ocr_reader),
+            '.tiff': ImageFileReader(self.ocr_reader),
+            '.bmp': ImageFileReader(self.ocr_reader),
+            '.gif': ImageFileReader(self.ocr_reader),
+        }
+
+    def read(self, file_path):
+        ext = os.path.splitext(file_path)[1].lower()
+        if ext in self.readers:
+            return self.readers[ext].read(file_path)
+        else:
+            print(f"Unsupported file type: {ext}")
+            return None
+
+    def cleanup(self, file_path):
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        image_dir = os.path.join(os.path.dirname(file_path), 'extracted_images')
+        if os.path.exists(image_dir):
+            for image_file in os.listdir(image_dir):
+                image_file_path = os.path.join(image_dir, image_file)
+                if os.path.isfile(image_file_path):
+                    os.remove(image_file_path)
+            os.rmdir(image_dir)
+
 
 # Example usage:
 if __name__ == "__main__":
-    directory_path = "E:\\Codes\\LLM Apps\\SuperAgent\\Knowledge\\files"
-    urls = [
-        "https://web.mst.edu/~hilgers/index_files/IST%205001.pdf",
-    ]
-    reader = FileReader()
-    contents = reader.download_and_read_files(directory_path, urls)
-    for filename, content in contents.items():
-        if isinstance(content, dict) and 'images' in content:
-            print(f"Contents of {filename}:\nText:\n{content['text']}\nImages: {content['images']}\nImage Text:\n{content['image_text']}\n")
-        else:
-            print(f"Contents of {filename}:\n{content}\n")
+    file_manager = FileManager(ocr_languages=['en', 'fa'], enable_ocr=False)
+    
+    file_uploaded = False
+    
+    directory_path = FILES_DIR
+    
+    filename = input("Please upload a file (example: sample.pdf): ").strip()
+    
+    if filename:
+        file_uploaded = True
+        
+        
+    if filename.lower().endswith(('.txt', '.pdf', '.docx', '.pptx', '.xlsx', '.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+        valid_file = True
+    else:
+        valid_file = False
+    
+    if file_uploaded & valid_file:
+        file_path = os.path.join(directory_path, filename)
+        
+        content = file_manager.read(file_path)
+        #file_manager.cleanup(file_path)
+        print(content)
+    else:
+        print("Invalid file type.")

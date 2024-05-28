@@ -1,6 +1,9 @@
 import os
-from pypdf import PdfReader as PyPdfReader
 import requests
+from pypdf import PdfReader as PyPdfReader
+import sys
+
+from settings import FILES_DIR
 
 class SimplePdfReader:
     def extract_text_from_file(self, path):
@@ -38,12 +41,14 @@ class SimplePdfReader:
             return ""
 
 if __name__ == "__main__":
-    file_path = "E:\\Codes\\LLM Apps\\SuperAgent\\Tools\\files\\python.pdf"
+    file_path = FILES_DIR + "\sample.pdf"
     file_link = "https://web.mst.edu/~hilgers/index_files/IST%205001.pdf"
 
     extractor = SimplePdfReader()
-    text2 = extractor.extract_text(file_link)
-    print(text2)
-
     text = extractor.extract_text(file_path)
+    print("-------local: ")
     print(text)
+    
+'''    text2 = extractor.extract_text(file_link)
+    print("-----------from link: ")
+    print(text2)'''
